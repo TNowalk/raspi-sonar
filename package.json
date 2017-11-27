@@ -1,0 +1,23 @@
+{
+  "name": "raspi-sonar",
+  "version": "1.0.0",
+  "description": "Simple NodeJS service that tracks running microservices",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TNowalk/raspi-sonar.git"
+  },
+  "author": "Trevor Nowalk",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TNowalk/raspi-sonar/issues"
+  },
+  "homepage": "https://github.com/TNowalk/raspi-sonar#readme",
+  "dependencies": {
+    "amqplib": "^0.5.2"
+  }
+}
