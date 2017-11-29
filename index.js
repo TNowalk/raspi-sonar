@@ -11,6 +11,5 @@ sonar.connect().then((conn) => {
   let opts = {
     service: 'raspi-sonar',
   };
-  sonar.pinger(opts);
   sonar.listen();
 }).then(null, console.warn);
