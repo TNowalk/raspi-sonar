@@ -7,10 +7,10 @@ if (process.env.RABBIT_URL === undefined) {
   process.exit(1);
 }
 
-sonar.connect(process.env.RABBIT_URL).then((conn) => {
+sonar.connect().then((conn) => {
   let opts = {
     service: 'raspi-sonar',
   };
-  //sonar.pinger(conn, 'raspi-sonar.ping', opts);
-  sonar.listen(conn, 'raspi-sonar.ping');
+  sonar.pinger(opts);
+  sonar.listen();
 }).then(null, console.warn);
