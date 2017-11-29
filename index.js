@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-let os = require('os');
 let sonar = require('./lib/sonar');
 
 if (process.env.RABBIT_URL === undefined) {
@@ -10,9 +9,8 @@ if (process.env.RABBIT_URL === undefined) {
 
 sonar.connect(process.env.RABBIT_URL).then((conn) => {
   let opts = {
-    'name': 'raspi-sonar',
-    'host': os.hostname()
+    service: 'raspi-sonar',
   };
-  //sonar.ping(conn, 'raspi-sonar.ping', JSON.stringify(opts));
+  //sonar.pinger(conn, 'raspi-sonar.ping', opts);
   sonar.listen(conn, 'raspi-sonar.ping');
 }).then(null, console.warn);
