@@ -18,6 +18,8 @@ MongoClient.connect(process.env.MONGODB_URL, function(err, db) {
     process.exit(1);
   }
 
+  const col = db.collection('services');
+
   sonar.connect().then((conn) => {
     let opts = {
       service: 'raspi-sonar',
@@ -26,14 +28,13 @@ MongoClient.connect(process.env.MONGODB_URL, function(err, db) {
       let data = JSON.parse(msg);
 
       // Search mongo to see if already tracked
-      db.collection('services').findOne({service: data.service}, (qErr, doc) => {
+      col.findOne({service: data.service}, (qErr, doc) => {
         if (qErr) {
           console.info('[MONGODB] Query failed');
         }
 
         if (doc) {
           // If tracked, update last heard from timestamp and write to influx
-          console.log('doc', doc);
           let found = false;
           for (let i = 0; i < doc.hosts.length; i++) {
             if (doc.hosts[i].hostname === data.hostname) {
@@ -67,14 +68,14 @@ MongoClient.connect(process.env.MONGODB_URL, function(err, db) {
             });
           }
 
-          db.collection('services').updateOne({_id: doc._id}, doc, (uErr) => {
+          col.updateOne({_id: doc._id}, doc, (uErr) => {
             if (uErr) {
               console.info('[MONGODB] Update failed');
             }
           });
         } else {
           // If not tracked, inssert into mongo and write to influx
-          db.collection('services').insertOne({
+          col.insertOne({
             service: data.service,
             hosts: [{
               cpuUsage: data.cpuUsage,
@@ -91,7 +92,34 @@ MongoClient.connect(process.env.MONGODB_URL, function(err, db) {
         }
       });
     });
-    // Every 5 minutes pull down services from mongo, if last update is
-      // >5 minutes then set status to offline and update status in influx
+
+    setInterval(cleanServices,  (60 * 5 * 1000));
+
+    function cleanServices() {
+      col.find({}).toArray((err, docs) => {
+        if (err) {
+          return;
+        }
+        // Loop through each doc
+        for (let i = 0, dLength = docs.length; i < dLength; i++) {
+          let needsUpdate = false;
+          // Loop through hosts
+          for (let j = 0, hLength = docs[i].hosts.length; j < hLength; j++) {
+            let interval = docs[i].hosts[j].interval;
+            let minTimestamp = Date.now() - (interval * 2); // Two missed polls
+            if (docs[i].hosts[j].timestamp < minTimestamp) {
+              docs[i].hosts[j].pingCount = 0;
+              docs[i].hosts[j].status = 'offline';
+              docs[i].hosts[j].uptime = 0;
+              needsUpdate = true;
+            }
+          }
+
+          if (needsUpdate) {
+            col.update({_id: docs[i]._id}, docs[i]);
+          }
+        }
+      });
+    }
   }).then(null, console.warn);
 });
