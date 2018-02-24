@@ -34,6 +34,7 @@ MongoClient.connect(process.env.MONGODB_URL, function(err, db) {
         }
 
         if (doc) {
+          console.info('DEBUG: Found service, updating...');
           // If tracked, update last heard from timestamp and write to influx
           let found = false;
           for (let i = 0; i < doc.hosts.length; i++) {
@@ -74,6 +75,7 @@ MongoClient.connect(process.env.MONGODB_URL, function(err, db) {
             }
           });
         } else {
+          console.info('DEBUG: New service, creating...');
           // If not tracked, inssert into mongo and write to influx
           col.insertOne({
             service: data.service,
@@ -96,6 +98,7 @@ MongoClient.connect(process.env.MONGODB_URL, function(err, db) {
     setInterval(cleanServices,  (60 * 5 * 1000));
 
     function cleanServices() {
+      console.info('DEBUG: Cleaning up services');
       col.find({}).toArray((err, docs) => {
         if (err) {
           return;
