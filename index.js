@@ -30,7 +30,7 @@ MongoClient.connect(process.env.MONGODB_URL, function(err, db) {
       // Search mongo to see if already tracked
       col.findOne({service: data.service}, (qErr, doc) => {
         if (qErr) {
-          console.info('[MONGODB] Query failed');
+          console.error('[MONGODB] Query failed');
         }
 
         if (doc) {
@@ -70,7 +70,7 @@ MongoClient.connect(process.env.MONGODB_URL, function(err, db) {
 
           col.updateOne({_id: doc._id}, doc, (uErr) => {
             if (uErr) {
-              console.info('[MONGODB] Update failed');
+              console.error('[MONGODB] Update failed');
             }
           });
         } else {
